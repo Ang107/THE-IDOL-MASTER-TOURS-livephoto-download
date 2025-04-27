@@ -1,0 +1,10 @@
+# VSCode
+.vscode/
+# Python
+__pycache__/
+*.py[cod]
+# Node
+node_modules/
+# Docker
+data/
+*.zip
