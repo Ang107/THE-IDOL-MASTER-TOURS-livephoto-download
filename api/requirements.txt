@@ -1,0 +1,8 @@
+fastapi==0.111.*
+uvicorn[standard]==0.29.*
+python-multipart==0.0.*
+pyzbar==0.1.*
+Pillow==10.*
+aiohttp==3.*
+python-magic==0.4.*
+pillow-heif==0.15.*

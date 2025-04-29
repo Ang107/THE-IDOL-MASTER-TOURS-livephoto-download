@@ -1,0 +1,21 @@
+services:
+  api:
+    build:
+      context: ./api
+    container_name: idolmaster-tours-livephoto-api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+
+  web:
+    build:
+      context: ./web
+    container_name: idolmaster-tours-livephoto-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE=http://api:8000
+    depends_on:
+      - api
