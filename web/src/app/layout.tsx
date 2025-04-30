@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "ツアマス ライブフォト Downloader",
   description:
     "「アイドルマスター ツアーズ」の非公式ファンサイト。ライブフォトをまとめてダウンロードできます。",
+    icons: {
+    icon: "/hosii_miki_icon.png",               
+    shortcut: "/hosii_miki_icon.png",    
+    apple: "/hosii_miki_icon.png",    
+  },
 };
 
 export default function RootLayout({
