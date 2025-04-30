@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       // ボディ上限を 25MB に設定（必要に応じて調整）
-      bodySizeLimit: 250 * 1024 * 1024,
+      bodySizeLimit: '250mb',
     },
   },
 };
