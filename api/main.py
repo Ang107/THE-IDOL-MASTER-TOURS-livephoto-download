@@ -1,5 +1,3 @@
-# main.py
-
 import asyncio
 import os
 import time
@@ -8,12 +6,12 @@ import aiohttp
 import magic
 import pillow_heif
 from PIL import UnidentifiedImageError
-from fastapi import BackgroundTasks, FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from qr import extract_url
-from tmp_store import peek_zip, pop_zip, save_temp_zip, sweep_expired
+from tmp_store import peek_zip, save_temp_zip, sweep_expired
 from utils import cleanup_cache, fetch_all, make_zip, timestamp
 
 pillow_heif.register_heif_opener()
@@ -24,6 +22,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Length"],
 )
 
 MAX_FILES = 10
@@ -109,19 +108,14 @@ async def validate(files: list[UploadFile] = File(...)):
             seen[code] = idx
             good.append(url)
 
-    # 全滅
     if not good:
-        return JSONResponse(
-            status_code=200,
-            content={"ok": False, "errors": errors},
-        )
+        return JSONResponse(status_code=200, content={"ok": False, "errors": errors})
 
     imgs = await asyncio.gather(*(fetch_all(u.split("/")[-2]) for u in good))
     ts = timestamp()
     zip_bytes = make_zip(imgs, ts)
     ticket = save_temp_zip(zip_bytes, ts)
 
-    # 成功
     return JSONResponse(
         status_code=200,
         content={
@@ -131,15 +125,6 @@ async def validate(files: list[UploadFile] = File(...)):
             "errors": errors,
         },
     )
-
-
-def file_iterator(path: str, chunk_size: int = 1024 * 1024):
-    with open(path, "rb") as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break
-            yield chunk
 
 
 @app.get("/download/{ticket}")
@@ -153,27 +138,10 @@ async def download_stream(ticket: str):
                 "error": "無効または期限切れのチケットです。再度検証したあとに、ダウンロードしてください。",
             },
         )
-
     path, exp, ts = rec
-    if time.time() > exp:
-        pop = pop_zip(ticket)
-        if pop:
-            path_to_remove, _, _ = pop
-            if os.path.exists(path_to_remove):
-                os.remove(path_to_remove)
-        return JSONResponse(
-            status_code=404,
-            content={
-                "ok": False,
-                "error": "無効または期限切れのチケットです。再度検証したあとに、ダウンロードしてください。",
-            },
-        )
 
-    headers = {
-        "Content-Disposition": f'attachment; filename="idolmaster_tours_livephoto_{ts}.zip"'
-    }
-    return StreamingResponse(
-        file_iterator(path),
+    return FileResponse(
+        path,
         media_type="application/zip",
-        headers=headers,
+        filename=f"idolmaster_tours_livephoto_{ts}.zip",
     )
