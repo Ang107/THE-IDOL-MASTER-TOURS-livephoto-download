@@ -22,7 +22,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Content-Length"],
+    expose_headers=["Content-Length", "Content-Disposition"],
 )
 
 MAX_FILES = 10

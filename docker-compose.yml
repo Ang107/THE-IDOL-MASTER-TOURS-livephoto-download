@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     environment:
       - TZ=Asia/Tokyo
+      - PORT=8000
 
   web:
     build:
@@ -16,6 +17,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_BASE=http://api:8000
+      - PORT=3000
     depends_on:
       - api
