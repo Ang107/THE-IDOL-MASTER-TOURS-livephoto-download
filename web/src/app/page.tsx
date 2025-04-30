@@ -169,8 +169,14 @@ export default function Home() {
         const blob = new Blob(chunks)
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
+        const disposition = res.headers.get("Content-Disposition")
+        let filename = `idolmaster_tours_livephoto_${Date.now()}.zip`  // フォールバック
+        if (disposition) {
+          const match = disposition.match(/filename="(.+)"/)
+          if (match) filename = match[1]
+        }
         a.href = url
-        a.download = `idolmaster_tours_livephoto_${Date.now()}.zip`
+        a.download = filename
         document.body.appendChild(a)
         a.click()
         a.remove()
