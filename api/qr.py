@@ -1,6 +1,9 @@
+# qr.py
+import io, re
+
 from pyzbar.pyzbar import decode
 from PIL import Image, ImageOps
-import io, re
+
 
 PATTERN = re.compile(
     r"^https://livephoto\.idolmaster-tours-w\.bn-am\.net/livephoto/([A-Za-z0-9_-]+)/$"
