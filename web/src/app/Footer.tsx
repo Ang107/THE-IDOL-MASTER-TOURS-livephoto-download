@@ -4,7 +4,7 @@ import React from 'react'
 export default function Footer() {
   return (
     <footer className="bg-gray-100 text-gray-700 py-6">
-      <div className="max-w-screen-md mx-auto px-4 space-y-4 text-sm">
+      <div className="max-w-screen-md mx-auto px-4 space-y-4 text-sm text-center">
         {/* サイト説明 */}
         <p>
           本サイトは「アイドルマスター ツアーズ」の非公式ファンサイトです。  
@@ -17,7 +17,7 @@ export default function Footer() {
         </p>
 
         {/* リンク群 */}
-        <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-center sm:space-x-6 space-y-2 sm:space-y-0">
           <a
             href="https://github.com/Ang107/THE-IDOL-MASTER-TOURS-livephoto-downloader"
             target="_blank"
