@@ -8,9 +8,9 @@ import aiohttp
 import magic
 import pillow_heif
 from PIL import UnidentifiedImageError
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 
 from qr import extract_url
 from tmp_store import peek_zip, pop_zip, save_temp_zip, sweep_expired
@@ -41,9 +41,7 @@ ALLOWED_MIME = {
 async def schedule_cleanup():
     async def loop():
         while True:
-            # ZIP 一時ストアの期限切れクリーン
             sweep_expired()
-            # 画像キャッシュの期限切れクリーン
             cleanup_cache()
             await asyncio.sleep(600)  # 10 分ごと
 
@@ -53,9 +51,12 @@ async def schedule_cleanup():
 @app.post("/validate")
 async def validate(files: list[UploadFile] = File(...)):
     if len(files) > MAX_FILES:
-        raise HTTPException(400, "最大 10 枚までです")
+        return JSONResponse(
+            status_code=400,
+            content={"ok": False, "error": "最大 10 枚までです"},
+        )
 
-    good, errors, seen = [], [], {}  # seen: code -> first_idx
+    good, errors, seen = [], [], {}
     async with aiohttp.ClientSession() as session:
         for idx, f in enumerate(files, 1):
             data = await f.read()
@@ -71,6 +72,7 @@ async def validate(files: list[UploadFile] = File(...)):
                     f"[{idx}枚目] （{f.filename}）が対応画像形式ではありません。"
                 )
                 continue
+
             try:
                 url = extract_url(data)
             except UnidentifiedImageError:
@@ -83,6 +85,7 @@ async def validate(files: list[UploadFile] = File(...)):
                     f"[{idx}枚目] （{f.filename}）のQRコードを検出できません。"
                 )
                 continue
+
             try:
                 async with session.get(url) as resp:
                     if resp.status == 404:
@@ -95,36 +98,42 @@ async def validate(files: list[UploadFile] = File(...)):
                     f"[{idx}枚目] （{f.filename}）のQR先へのアクセスでエラーが発生しました: {e}"
                 )
                 continue
+
             code = url.split("/")[-2]
             if code in seen:
                 errors.append(
-                    f"[{idx}枚目] （{f.filename}）のQRコードは他のQRコードと重複しているため、スキップされました。"
+                    f"[{idx}枚目] （{f.filename}）のQRコードは他と重複しているためスキップしました。"
                 )
                 continue
 
             seen[code] = idx
             good.append(url)
 
+    # 全滅
     if not good:
-        return {"ok": False, "errors": errors}  # 全滅
+        return JSONResponse(
+            status_code=200,
+            content={"ok": False, "errors": errors},
+        )
 
     imgs = await asyncio.gather(*(fetch_all(u.split("/")[-2]) for u in good))
-
-    # バリデーション実行時にタイムスタンプを取得
     ts = timestamp()
-
     zip_bytes = make_zip(imgs, ts)
     ticket = save_temp_zip(zip_bytes, ts)
-    return {
-        "ok": True,
-        "ticket": ticket,
-        "count": len(imgs),
-        "errors": errors,
-    }
+
+    # 成功
+    return JSONResponse(
+        status_code=200,
+        content={
+            "ok": True,
+            "ticket": ticket,
+            "count": len(imgs),
+            "errors": errors,
+        },
+    )
 
 
 def file_iterator(path: str, chunk_size: int = 1024 * 1024):
-    """1MBずつ読み込んで yield するジェネレータ"""
     with open(path, "rb") as f:
         while True:
             chunk = f.read(chunk_size)
@@ -135,20 +144,31 @@ def file_iterator(path: str, chunk_size: int = 1024 * 1024):
 
 @app.get("/download/{ticket}")
 async def download_stream(ticket: str):
-    rec = peek_zip(ticket)  # (path, exp, ts) or None
+    rec = peek_zip(ticket)
     if not rec:
-        raise HTTPException(404, "無効または期限切れのチケットです")
-    path, exp, ts = rec
+        return JSONResponse(
+            status_code=404,
+            content={
+                "ok": False,
+                "error": "無効または期限切れのチケットです。再度検証したあとに、ダウンロードしてください。",
+            },
+        )
 
+    path, exp, ts = rec
     if time.time() > exp:
         pop = pop_zip(ticket)
         if pop:
             path_to_remove, _, _ = pop
             if os.path.exists(path_to_remove):
                 os.remove(path_to_remove)
-        raise HTTPException(404, "無効または期限切れのチケットです")
+        return JSONResponse(
+            status_code=404,
+            content={
+                "ok": False,
+                "error": "無効または期限切れのチケットです。再度検証したあとに、ダウンロードしてください。",
+            },
+        )
 
-    # ダウンロード後は削除せず、15分後の掃除に任せる
     headers = {
         "Content-Disposition": f'attachment; filename="idolmaster_tours_livephoto_{ts}.zip"'
     }
