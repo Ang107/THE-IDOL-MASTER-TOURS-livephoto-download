@@ -1,27 +1,19 @@
 # web/Dockerfile
 
-# 1) Build application with dev dependencies
-FROM node:20-alpine AS builder
+FROM node:20-alpine
+
+# 作業ディレクトリ
 WORKDIR /app
 
-# Copy package files and install all dependencies (dev + prod)
+# 依存だけ先にインストール
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code and build
+# ソースをすべてコピー
 COPY . .
-RUN npm run build && npm prune --production
 
-# 2) Production image
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-
-# Copy build output and production dependencies
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-
+# ポートを宣言（Render 側の $PORT へバインドされる）
 EXPOSE 3000
-CMD ["sh", "-c", "npm run start -- -H 0.0.0.0 -p $PORT"]
+
+# コンテナ起動時に環境変数を使ってビルド＆起動
+CMD ["sh", "-c", "npm run build && npx next start -H 0.0.0.0 -p $PORT"]
