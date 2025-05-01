@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from qr import extract_url
 from tmp_store import peek_zip, save_temp_zip, sweep_expired
-from utils import cleanup_cache, fetch_all, make_zip, timestamp
+from utils import fetch_all, make_zip, timestamp
 
 pillow_heif.register_heif_opener()
 
@@ -41,7 +41,6 @@ async def schedule_cleanup():
     async def loop():
         while True:
             sweep_expired()
-            cleanup_cache()
             await asyncio.sleep(600)  # 10 分ごと
 
     asyncio.create_task(loop())
@@ -89,7 +88,7 @@ async def validate(files: list[UploadFile] = File(...)):
                 async with session.get(url) as resp:
                     if resp.status == 404:
                         errors.append(
-                            f"[{idx}枚目] （{f.filename}）のQR先リソースが見つかりませんでした（404）。"
+                            f"[{idx}枚目] （{f.filename}）はライブフォトの保存期間が終了しています。"
                         )
                         continue
             except Exception as e:
