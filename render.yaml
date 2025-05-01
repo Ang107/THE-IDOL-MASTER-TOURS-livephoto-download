@@ -1,0 +1,15 @@
+# render.yaml (リポジトリルート)
+services:
+  - type: web
+    name: THE-IDOL-MASTER-TOURS-livephoto-downloader-web
+    env: docker
+    region: singapore
+    branch: main
+    dockerfilePath: web/Dockerfile
+    buildContext: web
+    buildArgs:
+      - key: NEXT_PUBLIC_API_BASE
+        value: https://the-idol-master-tours-livephoto-8886.onrender.com
+    env:
+      - key: NEXT_PUBLIC_API_BASE
+        value: https://the-idol-master-tours-livephoto-8886.onrender.com
