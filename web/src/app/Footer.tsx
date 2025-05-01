@@ -28,6 +28,8 @@ export default function Footer() {
           </a>
           <a
             href="https://docs.google.com/forms/d/e/1FAIpQLSdGQvtMP5rm2zvMeDqo-oWNk8phUElR6ck71IdzeytENW-SxA/viewform?usp=header"
+            target="_blank"
+            rel="noopener noreferrer"
             className="hover:underline"
           >
             バグ報告・お問い合わせ
