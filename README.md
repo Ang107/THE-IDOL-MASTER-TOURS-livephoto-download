@@ -4,6 +4,10 @@
 ツアマスのゲーム内で表示されたQRコードの写真をアップロードすることで、QRコードを解析し、該当するライブフォトをまとめてZIP形式で取得できます。
 ## 公開URL
 以下のURLからサービスを実際に利用できます:
+https://the-idol-master-tours-livephoto.onrender.com/  
+
+アクセス直後に以下のような待機画面が表示される場合は、1分ほど待つとアクセス可能になります。
+![image](https://github.com/user-attachments/assets/d96b8a7d-026c-4071-a375-be6ba7993446)
 
 ## 特徴
 - 最大10枚のQRコード付き画像を同時にアップロード可能
