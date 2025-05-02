@@ -35,12 +35,12 @@ export default function Footer() {
             バグ報告・お問い合わせ
           </a>
           <a
-            href="https://twitter.com/Ang_kyopro"
+            href="https://twitter.com/Ang_imas"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"
           >
-            制作者（@Ang_kyopro） 
+            制作者（@Ang_imas） 
           </a>
         </div>
 
