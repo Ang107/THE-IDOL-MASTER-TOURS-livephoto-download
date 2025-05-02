@@ -19,7 +19,10 @@ pillow_heif.register_heif_opener()
 app = FastAPI(title="idolmaster-tours-livephoto-api")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://the-idol-master-tours-livephoto.onrender.com",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["Content-Length", "Content-Disposition"],
