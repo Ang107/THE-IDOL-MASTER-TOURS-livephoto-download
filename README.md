@@ -21,7 +21,7 @@ https://the-idol-master-tours-livephoto.onrender.com/
 - Docker / Docker Compose
 ### 起動手順
 ```bash
-git clone https://github.com/yourusername/idolmaster-tours-livephoto-downloader.git
+git clone https://github.com/Ang107/THE-IDOL-MASTER-TOURS-livephoto-downloader.git
 cd idolmaster-tours-livephoto-downloader
 docker compose up --build
 ```
