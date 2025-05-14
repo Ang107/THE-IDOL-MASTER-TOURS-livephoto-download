@@ -33,11 +33,11 @@ export default function Home() {
   // ファイルドロップハンドラ
   const onDrop = useCallback(
     (accepted: File[]) => {
-      if (accepted.length + files.length > 10){
+      if (accepted.length + files.length > MAX_FILES){
         setErrors([`選択できる画像は最大 ${MAX_FILES} 枚までです。`])
         return
       }
-      const newFiles = [...files, ...accepted].slice(0, 10)
+      const newFiles = [...files, ...accepted].slice(0, MAX_FILES)
       setErrors([])
       setTicket(null)
       setValidationDone(false)
@@ -51,7 +51,7 @@ export default function Home() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.heic', '.heif'] },
-    maxFiles: 10,
+    maxFiles: MAX_FILES,
     onDrop,
     disabled: isValidating || isDownloading,
   })
