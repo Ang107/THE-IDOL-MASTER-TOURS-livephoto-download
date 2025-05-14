@@ -33,6 +33,7 @@ export default function Home() {
   const onDrop = useCallback(
     (accepted: File[]) => {
       if (accepted.length + files.length > 10) return
+      // to do 10個以上選択したらエラーメッセージを出す
       const newFiles = [...files, ...accepted].slice(0, 10)
       setErrors([])
       setTicket(null)
@@ -55,7 +56,11 @@ export default function Home() {
   // プレビュー削除
   const removeFile = (idx: number) => {
     const newFiles = files.filter((_, i) => i !== idx)
+    setErrors([])
+    setTicket(null)
     setValidationDone(false)
+    setDownloadDone(false)
+    setDownloadProgress(0)
     setFiles(newFiles)
     setPreviews(newFiles.map((f) => URL.createObjectURL(f)))
   }
