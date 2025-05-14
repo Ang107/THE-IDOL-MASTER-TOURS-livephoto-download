@@ -12,6 +12,7 @@ def save_temp_zip(data: bytes, ts: str) -> str:
     os.write(fd, data)
     os.close(fd)
     _store[ticket] = (path, time.time() + _TTL, ts)
+    print(f"zipファイル作成: {ticket}", flush=True)
     return ticket
 
 
@@ -29,4 +30,6 @@ def sweep_expired():
     for ticket in expired:
         path, _, _ = _store.pop(ticket)
         if os.path.exists(path):
+            print(f"zipファイル削除: {ticket}", flush=True)
             os.remove(path)
+    print(f"保存されているzipファイルの数: {len(_store)}", flush=True)

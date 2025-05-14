@@ -1,3 +1,4 @@
+# utils.py
 from collections import OrderedDict
 import datetime as dt
 from zoneinfo import ZoneInfo
@@ -47,7 +48,10 @@ async def _fetch_one(session, url):
 
 async def fetch_all(code: str) -> list[bytes]:
     if code in _img_cache:
+        print(f"cache exists: {code}", flush=True)
         return _img_cache[code]
+    else:
+        print(f"cache not exists: {code}", flush=True)
 
     async with aiohttp.ClientSession() as s:
         names = await _get_img_names(s, code)
@@ -59,6 +63,7 @@ async def fetch_all(code: str) -> list[bytes]:
     _img_cache[code] = imgs
     if len(_img_cache) > MAX_ITEMS:
         _img_cache.popitem(last=False)
+    print(f"保存されているキャッシュの数: {len(_img_cache)}", flush=True)
     return imgs
 
 
