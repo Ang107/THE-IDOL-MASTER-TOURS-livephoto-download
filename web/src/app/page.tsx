@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
+const MAX_FILES = 10
 
 interface ValidateResponse {
   ok: boolean
@@ -32,8 +33,10 @@ export default function Home() {
   // ファイルドロップハンドラ
   const onDrop = useCallback(
     (accepted: File[]) => {
-      if (accepted.length + files.length > 10) return
-      // to do 10個以上選択したらエラーメッセージを出す
+      if (accepted.length + files.length > 10){
+        setErrors([`選択できる画像は最大 ${MAX_FILES} 枚までです。`])
+        return
+      }
       const newFiles = [...files, ...accepted].slice(0, 10)
       setErrors([])
       setTicket(null)
