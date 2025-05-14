@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useDropzone } from 'react-dropzone'
+import { useDropzone, FileRejection } from 'react-dropzone'
 const MAX_FILES = 10
 
 interface ValidateResponse {
@@ -32,13 +32,13 @@ export default function Home() {
 
   // ファイルドロップハンドラ
   const onDrop = useCallback(
-    (accepted: File[]) => {
-      if (accepted.length + files.length > MAX_FILES){
+    (accepted: File[], fileRejections: FileRejection[]) => {
+      if (files.length + accepted.length > MAX_FILES || fileRejections.length > MAX_FILES){
         setErrors([`選択できる画像は最大 ${MAX_FILES} 枚までです。`])
         return
       }
       const newFiles = [...files, ...accepted].slice(0, MAX_FILES)
-      setErrors([])
+      setErrors([])          
       setTicket(null)
       setValidationDone(false)
       setDownloadDone(false)
@@ -231,7 +231,7 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-4">使い方</h2>
             <ol className="list-decimal ml-5 space-y-2 text-sm text-gray-700">
               <li>
-                ツアマスのライブフォトのQRコードが映った画像を選択します。最大10枚まで選択可能です。
+                ツアマスのライブフォトのQRコードが映った画像を選択します。最大{MAX_FILES}枚まで選択可能です。
               </li>
               <li>「検証する」をクリックします。</li>
               <li>
@@ -309,7 +309,7 @@ export default function Home() {
               : '画像をドラッグ＆ドロップ、またはクリックして選択'}
           </p>
           <p className="mt-2 text-sm text-gray-500">
-            選択中: {files.length} / 10 枚
+            選択中: {files.length} / {MAX_FILES} 枚
           </p>
         </div>
       </div>
