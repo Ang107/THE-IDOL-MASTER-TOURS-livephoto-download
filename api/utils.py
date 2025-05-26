@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 import aiohttp, io, zipfile, os, asyncio, re
 from html.parser import HTMLParser
 from urllib.parse import urljoin
+from logger import log
 
 # ──────────────────── 定数 ────────────────────
 BASE_PAGE = "https://livephoto.idolmaster-tours-w.bn-am.net/livephoto/{code}/"
@@ -48,10 +49,10 @@ async def _fetch_one(session, url):
 
 async def fetch_all(code: str) -> list[bytes]:
     if code in _img_cache:
-        print(f"cache exists: {code}", flush=True)
+        log(f"cache exists: {code}")
         return _img_cache[code]
     else:
-        print(f"cache not exists: {code}", flush=True)
+        log(f"cache not exists: {code}")
 
     async with aiohttp.ClientSession() as s:
         names = await _get_img_names(s, code)
@@ -63,7 +64,7 @@ async def fetch_all(code: str) -> list[bytes]:
     _img_cache[code] = imgs
     if len(_img_cache) > MAX_ITEMS:
         _img_cache.popitem(last=False)
-    print(f"保存されているキャッシュの数: {len(_img_cache)}", flush=True)
+    log(f"保存されているキャッシュの数: {len(_img_cache)}")
     return imgs
 
 

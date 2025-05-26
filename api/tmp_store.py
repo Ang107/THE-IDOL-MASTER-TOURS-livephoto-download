@@ -1,5 +1,6 @@
 # tmp_store.py
 import os, secrets, tempfile, time
+from logger import log
 
 _TTL = 15 * 60
 # ticket -> (path, exp, timestamp)
@@ -12,7 +13,7 @@ def save_temp_zip(data: bytes, ts: str) -> str:
     os.write(fd, data)
     os.close(fd)
     _store[ticket] = (path, time.time() + _TTL, ts)
-    print(f"zipファイル作成: {ticket}", flush=True)
+    log(f"zipファイル作成 チケット: {ticket}")
     return ticket
 
 
@@ -30,6 +31,6 @@ def sweep_expired():
     for ticket in expired:
         path, _, _ = _store.pop(ticket)
         if os.path.exists(path):
-            print(f"zipファイル削除: {ticket}", flush=True)
+            log(f"zipファイル削除チケット: {ticket}")
             os.remove(path)
-    print(f"保存されているzipファイルの数: {len(_store)}", flush=True)
+    log(f"保存されているzipファイルの数: {len(_store)}")

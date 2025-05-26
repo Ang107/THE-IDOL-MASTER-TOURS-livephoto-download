@@ -8,3 +8,4 @@ node_modules/
 # Docker
 data/
 *.zip
+api/.env

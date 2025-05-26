@@ -6,6 +6,8 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+    env_file:
+      - ./api/.env 
     environment:
       - TZ=Asia/Tokyo
       - PORT=8000

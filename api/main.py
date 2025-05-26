@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from qr import extract_url
 from tmp_store import peek_zip, save_temp_zip, sweep_expired
 from utils import fetch_all, make_zip, timestamp
+from logger import log
 
 pillow_heif.register_heif_opener()
 
@@ -52,13 +53,14 @@ async def schedule_cleanup():
 
 @app.post("/validate")
 async def validate(files: list[UploadFile] = File(...)):
+    log("[POST]: /validate")
     if len(files) > MAX_FILES:
         return JSONResponse(
             status_code=400,
             content={"ok": False, "error": "最大 10 枚までです"},
         )
 
-    good, errors, seen = [], [], {}
+    successes, errors, seen = [], [], {}
     async with aiohttp.ClientSession() as session:
         for idx, f in enumerate(files, 1):
             data = await f.read()
@@ -109,12 +111,12 @@ async def validate(files: list[UploadFile] = File(...)):
                 continue
 
             seen[code] = idx
-            good.append(url)
-
-    if not good:
+            successes.append(url)
+    log(f"Success: {len(successes)} Error: {len(errors)}")
+    if not successes:
         return JSONResponse(status_code=200, content={"ok": False, "errors": errors})
 
-    imgs = await asyncio.gather(*(fetch_all(u.split("/")[-2]) for u in good))
+    imgs = await asyncio.gather(*(fetch_all(u.split("/")[-2]) for u in successes))
     ts = timestamp()
     zip_bytes = make_zip(imgs, ts)
     ticket = save_temp_zip(zip_bytes, ts)
@@ -132,6 +134,7 @@ async def validate(files: list[UploadFile] = File(...)):
 
 @app.get("/download/{ticket}")
 async def download_stream(ticket: str):
+    log(f"[GET]: /download/{ticket}")
     rec = peek_zip(ticket)
     if not rec:
         return JSONResponse(
